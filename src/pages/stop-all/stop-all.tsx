@@ -126,7 +126,7 @@ function Body(stop: Stop) {
         <ListOfRouteLogos
           routeIds={usualRouteIds}
           skipExpress={true}
-          addLinks={true}
+          addLinks={false}
         />
       </div>
       {stopTimeElements}
