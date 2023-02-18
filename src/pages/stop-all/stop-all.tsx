@@ -90,25 +90,6 @@ function Body(stop: Stop) {
     return x.arrival.time - y.arrival.time;
   })
 
-
-  let headsignToStopTimes = new Map();
-  for (const headsignRule of stop.headsignRules) {
-    headsignToStopTimes.set(headsignRule.headsign, [])
-  }
-  for (const stopTime of stop.stopTimes) {
-    let headsign = stopTime.headsign ?? "(terminating trains)"
-    if (!headsignToStopTimes.has(headsign)) {
-      headsignToStopTimes.set(headsign, [])
-    }
-    headsignToStopTimes.get(headsign).push(stopTime)
-  }
-
-  let headsigns = [];
-  for (const [headsign] of headsignToStopTimes) {
-    headsigns.push(headsign);
-  }
-  headsigns.sort();
-
   let usualRouteIds: string[] = [];
   for (const serviceMap of stop.serviceMaps) {
     if (serviceMap.configId === 'weekday') {
