@@ -47,6 +47,38 @@ function Header(props: HeaderProps) {
 }
 
 function Body(stop: Stop) {
+
+  let allStops:any[] = [];
+  // Get related stations first
+  let inSystemTransfers = [];
+  let otherSystemTransfers = [];
+  for (const transfer of stop.transfers) {
+    // TODO: handle cross-system transfers
+    if (transfer.toStop != null) {
+      inSystemTransfers.push(transfer.toStop)
+    } else {
+      otherSystemTransfers.push(transfer.toStop);
+    }
+  }
+
+  let allStopIDs:any[] = [];
+  // Add base/original stop first
+  allStopIDs.push(stop.id);
+  for (const stop of inSystemTransfers) {
+    allStopIDs.push(stop.id);
+  }
+
+  // Call API to get ALL stations
+  const httpData = useHttpData(stopServiceMapsURL(allStopIDs, false), 5000, ListStopsReply.fromJSON);
+  if (httpData.response !== null) {
+    for(const listOfStops of httpData.response.stops) {
+      allStops.push(listOfStops.stopTimes);
+    }
+  }
+
+  allStops = allStops.flat();
+
+
   let headsignToStopTimes = new Map();
   for (const headsignRule of stop.headsignRules) {
     headsignToStopTimes.set(headsignRule.headsign, [])
@@ -74,17 +106,6 @@ function Body(stop: Stop) {
     }
   }
 
-  let inSystemTransfers = [];
-  let otherSystemTransfers = [];
-  for (const transfer of stop.transfers) {
-    // TODO: handle cross-system transfers
-    if (transfer.toStop != null) {
-      inSystemTransfers.push(transfer.toStop)
-    } else {
-      otherSystemTransfers.push(transfer.toStop);
-    }
-  }
-
   let currentTime = Math.round((new Date()).getTime() / 1000);
 
   let stopTimeElements = [];
@@ -95,7 +116,7 @@ function Body(stop: Stop) {
   //   )
   // }
   stopTimeElements.push(
-    <HeadsignStopTimes key='test' headsign='All Directions' stopTimes={stop.stopTimes} currentTime={currentTime} />
+    <HeadsignStopTimes key='test' headsign='All Directions' stopTimes={allStops} currentTime={currentTime} />
   )
   if (!allAssigned) {
     stopTimeElements.push(
@@ -120,7 +141,7 @@ function Body(stop: Stop) {
         />
       </div>
       {stopTimeElements}
-      <LinkedStops stops={inSystemTransfers} title="Transfers" />
+      {/* <LinkedStops stops={inSystemTransfers} baseStop={stop.id} title="Transfers" /> */}
     </div>
   )
 }
@@ -279,19 +300,23 @@ function TripStopTime(props: TripStopTimeProps) {
 type LinkedStopsProps = {
   stops: Stop_Reference[],
   title: string,
+  baseStop: string,
 }
 
 function LinkedStops(props: LinkedStopsProps) {
   let stopIDs = [];
+  let allStops:any[] = [];
+  stopIDs.push(props.baseStop);
   for (const stop of props.stops) {
     stopIDs.push(stop.id);
   }
-  const httpData = useHttpData(stopServiceMapsURL(stopIDs), null, ListStopsReply.fromJSON);
+  const httpData = useHttpData(stopServiceMapsURL(stopIDs, false), null, ListStopsReply.fromJSON);
   if (stopIDs.length === 0) {
     return <div></div>
   }
   let stopIDToRoutes = new Map();
   if (httpData.response !== null) {
+    allStops = httpData.response.stops;
     for (const stop of httpData.response.stops) {
       let routeIds = [];
       for (const serviceMap of stop.serviceMaps) {
@@ -306,7 +331,7 @@ function LinkedStops(props: LinkedStopsProps) {
     }
   }
   let elements = [];
-  for (const stop of props.stops) {
+  for (const stop of allStops) {
     let routeIds = stopIDToRoutes.get(stop.id) ?? [];
     elements.push(
       <SiblingStop
