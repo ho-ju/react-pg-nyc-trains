@@ -69,7 +69,7 @@ function Body(stop: Stop) {
   }
 
   // Call API to get ALL stations
-  const httpData = useHttpData(stopServiceMapsURL(allStopIDs, false), 5000, ListStopsReply.fromJSON);
+  const httpData = useHttpData(stopServiceMapsURL(allStopIDs, false), null, ListStopsReply.fromJSON);
   if (httpData.response !== null) {
     for(const listOfStops of httpData.response.stops) {
       allStops.push(listOfStops.stopTimes);
@@ -77,6 +77,9 @@ function Body(stop: Stop) {
   }
 
   allStops = allStops.flat();
+  allStops = allStops.sort(function (x, y) {
+    return x.arrival.time - y.arrival.time;
+  })
 
 
   let headsignToStopTimes = new Map();
@@ -172,6 +175,7 @@ function HeadsignStopTimes(props: HeadsignStopTimesProps) {
   }
 
   let tripStopTimeElements = [];
+  let walkingOffset = (60 * 7)
   for (const stopTime of props.stopTimes) {
     let tripTime = stopTime.arrival?.time;
     let direction = stopTime.headsign;
@@ -184,7 +188,7 @@ function HeadsignStopTimes(props: HeadsignStopTimesProps) {
     }
     // This handles buggy stale trips in the GTFS feed, as well as trips that have left the station
     // but have not been updated in the feed yet.
-    if (tripTime < props.currentTime) {
+    if (tripTime < props.currentTime + walkingOffset) {
       skipped += 1;
       continue;
     }
