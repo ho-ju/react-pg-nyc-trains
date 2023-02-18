@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Link, useParams, useLocation } from "reac
 
 import HomePage from "./pages/home/HomePage";
 import StopPage from "./pages/stop/StopPage";
+import StopAllPage from "./pages/stop-all/stop-all";
 import RoutePage from "./pages/route/RoutePage";
 import TripPage from "./pages/trip/TripPage";
 
@@ -28,6 +29,7 @@ export default function App() {
               <Route path="/routes/:routeId" element={<RoutePageElement />} />
               <Route path="/routes/:routeId/:tripId" element={<TripPageElement />} />
               <Route path="/stops/:stopId" element={<StopPageElement />} />
+              <Route path="/all-stops/:stopId" element={<StopAllPageElement />} />
             </Routes>
           </div>
         </div>
@@ -63,6 +65,17 @@ function StopPageElement() {
   const location = useLocation();
   const state = location.state as {stopName: string};
   return <StopPage
+    stopId={params.stopId!}
+    stopName={state?.stopName}
+    key={params.stopId}
+  />
+}
+
+function StopAllPageElement() {
+  const params = useParams();
+  const location = useLocation();
+  const state = location.state as {stopName: string};
+  return <StopAllPage
     stopId={params.stopId!}
     stopName={state?.stopName}
     key={params.stopId}
