@@ -47,7 +47,7 @@ function Header(props: HeaderProps) {
 }
 
 function Body(stop: Stop) {
-
+  let allStations:any[] = [];
   let allStops:any[] = [];
   // Get related stations first
   let inSystemTransfers = [];
@@ -72,10 +72,19 @@ function Body(stop: Stop) {
   const httpData = useHttpData(stopServiceMapsURL(allStopIDs, false), null, ListStopsReply.fromJSON);
   if (httpData.response !== null) {
     for(const listOfStops of httpData.response.stops) {
-      allStops.push(listOfStops.stopTimes);
+      allStations.push(listOfStops);
     }
   }
 
+  // Set data for all stops and all service maps (for line numbers header)
+  for(const stations of allStations) {
+    allStops.push(stations.stopTimes);
+    for(const serviceMap of stations.serviceMaps) {
+      stop.serviceMaps.push(serviceMap);
+    }
+  }
+
+  // Flatten Arrays to match expected data set
   allStops = allStops.flat();
   allStops = allStops.sort(function (x, y) {
     return x.arrival.time - y.arrival.time;
@@ -113,11 +122,7 @@ function Body(stop: Stop) {
 
   let stopTimeElements = [];
   let allAssigned = true; // TODO
-  // for (const headsign of headsigns) {
-  //   stopTimeElements.push(
-  //     <HeadsignStopTimes key={headsign} headsign={headsign} stopTimes={headsignToStopTimes.get(headsign) ?? []} currentTime={currentTime} />
-  //   )
-  // }
+
   stopTimeElements.push(
     <HeadsignStopTimes key='test' headsign='All Directions' stopTimes={allStops} currentTime={currentTime} />
   )
