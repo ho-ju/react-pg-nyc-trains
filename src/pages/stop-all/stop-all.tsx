@@ -240,25 +240,6 @@ function HeadsignStopTimes(props: HeadsignStopTimesProps) {
   return <div>{children}</div>
 }
 
-type SiblingStopProps = {
-  key: string,
-  stopId: string,
-  name: string,
-  routeIds: string[],
-}
-
-function SiblingStop(props: SiblingStopProps) {
-  return (
-    <Link to={"/stops/" + props.stopId} state={{ stopName: props.name }}>
-      <ListElement className="SiblingStop">
-        <ListOfRouteLogos routeIds={props.routeIds} skipExpress={true} addLinks={false} />
-        <div className="name">{props.name}</div>
-      </ListElement>
-    </Link>
-  )
-}
-
-
 type TripStopTimeProps = {
   key: string,
   lastStopName: string,
@@ -298,84 +279,6 @@ function TripStopTime(props: TripStopTimeProps) {
         <div className="direction">&nbsp;<i>({props.direction})</i></div>
       </ListElement>
     </Link>
-  )
-}
-
-type LinkedStopsProps = {
-  stops: Stop_Reference[],
-  title: string,
-  baseStop: string,
-}
-
-function LinkedStops(props: LinkedStopsProps) {
-  let stopIDs = [];
-  let allStops:any[] = [];
-  stopIDs.push(props.baseStop);
-  for (const stop of props.stops) {
-    stopIDs.push(stop.id);
-  }
-  const httpData = useHttpData(stopServiceMapsURL(stopIDs, false), null, ListStopsReply.fromJSON);
-  if (stopIDs.length === 0) {
-    return <div></div>
-  }
-  let stopIDToRoutes = new Map();
-  if (httpData.response !== null) {
-    allStops = httpData.response.stops;
-    for (const stop of httpData.response.stops) {
-      let routeIds = [];
-      for (const serviceMap of stop.serviceMaps) {
-        if (serviceMap.configId !== "weekday") {
-          continue
-        }
-        for (const route of serviceMap.routes) {
-          routeIds.push(route.id)
-        }
-      }
-      stopIDToRoutes.set(stop.id, routeIds)
-    }
-  }
-  let elements = [];
-  for (const stop of allStops) {
-    let routeIds = stopIDToRoutes.get(stop.id) ?? [];
-    elements.push(
-      <SiblingStop
-        key={"siblingStop" + stop.id}
-        stopId={stop.id}
-        name={stop.name ?? ""}
-        routeIds={routeIds}
-      />
-    )
-  }
-  return (
-    <div>
-      <div className="SubHeading" key="header">{props.title}</div>
-      <List className="siblingStops">
-        {elements}
-      </List>
-    </div>
-  )
-}
-
-function buildConnections(stops: any) {
-  if (stops.length === 0) {
-    return null
-  }
-  let stopIds = new Set();
-  let elements = []
-  for (const siblingStop of stops) {
-    if (stopIds.has(siblingStop.id)) {
-      continue
-    }
-    stopIds.add(siblingStop.id)
-    elements.push(
-      <ListElement key={siblingStop.id}>{siblingStop.system?.name} at {siblingStop.name}</ListElement>
-    )
-  }
-  return (
-    <div>
-      <div className="SubHeading">Connections</div>
-      <List className="siblingStops">{elements}</List>
-    </div>
   )
 }
 
