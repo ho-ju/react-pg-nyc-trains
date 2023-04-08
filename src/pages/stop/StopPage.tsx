@@ -101,7 +101,6 @@ function Body(stop: Stop) {
       </div>
     )
   }
-
   // {buildLinkedStops(siblingStops, "Other platforms at this station")}
   // {buildConnections(otherSystemTransfers)}
   return (
@@ -113,6 +112,7 @@ function Body(stop: Stop) {
           addLinks={true}
         />
       </div>
+      <div className="all-link"><Link to={"/all-stops/" + stop.id}>[Show all stops]</Link></div>
       {stopTimeElements}
       <LinkedStops stops={inSystemTransfers} title="Transfers" />
     </div>

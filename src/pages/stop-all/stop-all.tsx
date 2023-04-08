@@ -86,9 +86,7 @@ function Body(stop: Stop) {
 
   // Flatten Arrays to match expected data set
   allStops = allStops.flat();
-  allStops = allStops.sort(function (x, y) {
-    return x.arrival.time - y.arrival.time;
-  })
+  allStops.sort((x, y) => x.arrival.time - y.arrival.time);
 
   let usualRouteIds: string[] = [];
   for (const serviceMap of stop.serviceMaps) {
